@@ -1,8 +1,5 @@
-
 #include <Windows.h>
-#include <tchar.h>
 #include <strsafe.h>
-
 #include "resource.h"
 
 // For making sure only one instance of the app is running at a time.
@@ -14,12 +11,11 @@ BOOL g_bSearchingNow = FALSE;
 // Handles to the "bullseye" cursor (active while searching) and the user's regular cursor (to restore when done searching)
 HCURSOR g_hBullseyeCursor, g_hRegularCursor;
 
-
-BOOL InitApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, INT nShowCmd)
+BOOL InitApp(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, INT nShowCmd)
 {
 	//Attempt to init the app; if the mutex can't be registered or already exists, return FALSE, else return TRUE
 	DWORD le;
-	appMutex = CreateMutex(NULL, TRUE, _T("WFPROTOMUTEX"));
+	appMutex = CreateMutexW(NULL, TRUE, L"WFPROTOMUTEX");
 	le = GetLastError();
 	if(appMutex==NULL)
 	{
@@ -48,16 +44,16 @@ VOID UpdateAppImg(HWND hDlg, BOOL ForE)
 {
 	// Update the "exe" icon in the dialog to "full" or "empty" based on the value of ForE
 	HBITMAP hBmp;
-	HINSTANCE hInstance = GetModuleHandle(NULL);
+	HINSTANCE hInstance = GetModuleHandleW(NULL);
 	if(ForE==TRUE)
 	{
-		hBmp = (HBITMAP)LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_FINDER_ACTIVE));
+		hBmp = (HBITMAP)LoadBitmapW(hInstance, MAKEINTRESOURCEW(IDB_FINDER_ACTIVE));
 	}
 	else
 	{
-		hBmp = (HBITMAP)LoadBitmap(hInstance, MAKEINTRESOURCE(IDB_FINDER_IDLE));
+		hBmp = (HBITMAP)LoadBitmapW(hInstance, MAKEINTRESOURCEW(IDB_FINDER_IDLE));
 	}
-	SendDlgItemMessage(hDlg, IDC_STATIC_FINDERTOOL, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBmp);
+	SendDlgItemMessageW(hDlg, IDC_STATIC_FINDERTOOL, STM_SETIMAGE, (WPARAM)IMAGE_BITMAP, (LPARAM)hBmp);
 }
 
 BOOL IsValidWindow(HWND hwTarget, HWND hDlg)
@@ -111,10 +107,10 @@ VOID HandleMouseMove(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 		TCHAR szWndInfo[512];
 		TCHAR szCnBuf[128];
 		RECT rect;
-		GetClassName(hwFound, szCnBuf, 128);
+		GetClassNameW(hwFound, szCnBuf, 128);
 		GetWindowRect(hwFound, &rect);
-		StringCchPrintf(szWndInfo, 512, _T("Target: 0x%.8X\r\n\'%s\'\r\n%dx%d"), (int)hwFound, szCnBuf, rect.right - rect.left, rect.bottom - rect.top);
-		SetDlgItemText(hWnd, IDC_STATIC_WNDINFO, szWndInfo);
+		StringCchPrintfW(szWndInfo, 512, L"Target: 0x%.8X\r\n\'%s\'\r\n%dx%d", (int)hwFound, szCnBuf, rect.right - rect.left, rect.bottom - rect.top);
+		SetDlgItemTextW(hWnd, IDC_STATIC_WNDINFO, szWndInfo);
 		
 		
 	}
@@ -190,16 +186,18 @@ BOOL CALLBACK WFDlgProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 }
 
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+INT APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPWSTR lpCmdLine, _In_ INT nShowCmd)
 {
-	if(!InitApp(hInstance, hPrevInstance, lpCmdLine, nShowCmd)) goto quitapp;
-	
-	
+	if (!InitApp(hInstance, hPrevInstance, lpCmdLine, nShowCmd))
+	{
+		goto cleanup;
+	}
+
 	g_bSearchingNow = FALSE;
-	g_hRegularCursor = LoadCursor(NULL, IDC_ARROW);
-	g_hBullseyeCursor =  (HCURSOR)LoadCursor(hInstance, MAKEINTRESOURCE(IDC_BULLSEYE_CURSOR));
-	DialogBox(hInstance, MAKEINTRESOURCE(IDD_WNDFINDER), NULL, WFDlgProc);
-quitapp:
+	g_hRegularCursor = LoadCursorW(NULL, IDC_ARROW);
+	g_hBullseyeCursor =  (HCURSOR)LoadCursorW(hInstance, MAKEINTRESOURCEW(IDC_BULLSEYE_CURSOR));
+	DialogBoxW(hInstance, MAKEINTRESOURCEW(IDD_WNDFINDER), NULL, WFDlgProc);
+cleanup:
 	UninitApp();
 	return 0;
 }
