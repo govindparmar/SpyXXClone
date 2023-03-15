@@ -104,13 +104,13 @@ VOID HandleMouseMove(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 	hwFound = WindowFromPoint(p);
 	if(IsValidWindow(hwFound, hWnd))
 	{
-		TCHAR szWndInfo[512];
-		TCHAR szCnBuf[128];
+		WCHAR wszWndInfo[512];
+		WCHAR wszCnBuf[128];
 		RECT rect;
-		GetClassNameW(hwFound, szCnBuf, 128);
+		GetClassNameW(hwFound, wszCnBuf, 128);
 		GetWindowRect(hwFound, &rect);
-		StringCchPrintfW(szWndInfo, 512, L"Target: 0x%.8X\r\n\'%s\'\r\n%dx%d", (int)hwFound, szCnBuf, rect.right - rect.left, rect.bottom - rect.top);
-		SetDlgItemTextW(hWnd, IDC_STATIC_WNDINFO, szWndInfo);
+		StringCchPrintfW(wszWndInfo, 512, L"Target: 0x%.8X\r\n\'%s\'\r\n%dx%d", (int)hwFound, wszCnBuf, rect.right - rect.left, rect.bottom - rect.top);
+		SetDlgItemTextW(hWnd, IDC_STATIC_WNDINFO, wszWndInfo);
 		
 		
 	}
@@ -139,7 +139,6 @@ VOID SearchWindow(HWND hDlg)
 	g_hRegularCursor = SetCursor(g_hBullseyeCursor);
 	SetCapture(hDlg);
 	//ShowWindow(hDlg, SW_MINIMIZE);
-	
 }
 
 BOOL CALLBACK WFDlgProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
